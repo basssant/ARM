@@ -80,11 +80,11 @@ void Systick_voidDisableInterrupt(void)
 }
 u32 Systick_u32GetElapsedTime(void)
 {
-    return (systick ->STK_VAL);
+    return ((systick ->STK_LOAD )- (systick ->STK_VAL));
 }
 u32 Systick_u32GetRemainingTime(void)
 {
-    return ((systick ->STK_LOAD )- (systick ->STK_VAL));
+    return (systick ->STK_VAL);
 }
 void Systick_voidSetPreLoadValue(u32 Copy_u8LoadValue)
 {
@@ -96,7 +96,11 @@ void Systick_voidResetSysTick(void)
 }
 void Systick_voidSetSingleInterval(u32 Copy_u32Ticks , void (*NotificationFunction)(void))
 {
-    systick->STK_LOAD = Copy_u32Ticks;
+	/*Disable STK*/
+	CLR_BIT(systick ->STK_CTRL, 0);
+	/*Reset STK*/
+	systick ->STK_VAL = 0;
+	systick->STK_LOAD = Copy_u32Ticks;
 
     pvCallBackFunction = NotificationFunction;
     u8IntervalFlag = 0;
@@ -107,7 +111,9 @@ void Systick_voidSetSingleInterval(u32 Copy_u32Ticks , void (*NotificationFuncti
 }
 void Systick_voidSetPeriodicInterval(u32 Copy_u32Ticks , void (*NotificationFunction)(void))
 {
-    pvCallBackFunction = NotificationFunction;
+	systick->STK_LOAD = Copy_u32Ticks;
+
+	pvCallBackFunction = NotificationFunction;
     u8IntervalFlag = 1;
     /*Enable STK Interrupt*/
 	SET_BIT(systick -> STK_CTRL ,1);
